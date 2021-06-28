@@ -188,10 +188,47 @@ namespace UsageStats
                 this.WindowState = WindowState.Minimized;
             }
         }
-
+        /// <summary>
+        /// Resets the statistics by calling <see cref="MainViewModel.InitStatistics"/>
+        /// </summary>
+        /// <param name="sender">The object which fired the event</param>
+        /// <param name="e">Provides event informations</param>
         private void Reset_Click(object sender, RoutedEventArgs e)
         {
+            this.vm.SaveReport(this.vm.Statistics, String.Empty);
             this.vm.InitStatistics();
+        }
+
+        double _WindowWidth = double.NaN;
+        double _WindowHeight = double.NaN;
+        /// <summary>
+        /// Enables the usability test mode
+        /// </summary>
+        /// <param name="sender">The object which fired the event</param>
+        /// <param name="e">Provides event informations</param>
+        private void Usability_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.vm.UsabilityModeDisabled)
+            {
+                //save current window size
+                _WindowWidth = Width;
+                _WindowHeight = Height;
+                //Set window size for the usability test
+                WindowStyle = WindowStyle.ToolWindow;
+                Width = 160;
+                Height = 90;
+                this.vm.InitStatistics();
+            }
+            else
+            {
+                //reassign window size
+                Width = _WindowWidth;
+                Height = _WindowHeight;
+                WindowStyle = WindowStyle.SingleBorderWindow;
+            }
+            this.vm.UsabilityModeDisabled = !this.vm.UsabilityModeDisabled;
+            ShowInTaskbar = !this.vm.UsabilityModeDisabled;
+            Topmost = !this.vm.UsabilityModeDisabled;
         }
     }
 }

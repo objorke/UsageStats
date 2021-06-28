@@ -17,6 +17,7 @@
             <Setter Property="FontFamily" Value="Consolas"/>
             <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
         </Style>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>
     <DockPanel>
         <tb:TaskbarIcon x:Name="NotifyIcon" IconSource="Images/piechart.ico" DoubleClickCommand="Open">
@@ -28,11 +29,12 @@
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
-        <Menu DockPanel.Dock="Top">
+        <Menu DockPanel.Dock="Top" Visibility="{Binding Path=UsabilityModeDisabled,Converter={StaticResource BooleanToVisibilityConverter}}">
             <MenuItem Header="_File">
                 <MenuItem Header="Open report folder" ToolTip="{Binding Settings.ReportPath}" Click="ReportFolder_Click"/>
                 <MenuItem Header="Save report" ToolTip="{Binding Settings.ReportPath}" Click="SaveReport_Click"/>
                 <MenuItem Header="_Preferences..." Click="Settings_Click"/>
+                <MenuItem Header="Enable tiny mode" Click="Usability_Click" />
                 <Separator/>
                 <MenuItem Header="E_xit" Click="Exit_Click"/>
             </MenuItem>
@@ -43,7 +45,7 @@
                 <MenuItem Header="_About" Click="About_Click"/>
             </MenuItem>
         </Menu>
-        <StatusBar DockPanel.Dock="Bottom">
+        <StatusBar DockPanel.Dock="Bottom" Visibility="{Binding Path=UsabilityModeDisabled,Converter={StaticResource BooleanToVisibilityConverter}}">
             <StatusBarItem>
                 <TextBlock Text="{Binding CurrentPosition}"/>
             </StatusBarItem>
@@ -51,12 +53,51 @@
                 <TextBlock Text="{Binding CurrentApplication}"/>
             </StatusBarItem>
         </StatusBar>
-        <TabControl Margin="0 4 0 0">
+        <!-- Displays the important informations for the usability test mode-->
+        <StackPanel DockPanel.Dock="Top">
+            <!-- Switch Visibility with DataTrigger so we dont need any converters -->
+            <StackPanel.Style>
+                <Style TargetType="{x:Type StackPanel}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Path=UsabilityModeDisabled}" Value="False">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Path=UsabilityModeDisabled}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </StackPanel.Style>
+            <TextBlock  >
+                <Run Text="Duration: " />
+                <Run Text="{Binding Duration,Mode=OneWay, StringFormat={}{0:mm\\:ss\\:fff}}" />
+            </TextBlock>
+            <StackPanel Orientation="Horizontal" Margin="0">
+                <TextBlock>
+                <Run Text="LClicks:" />
+                <Run Text="{Binding MouseStatistics.Stats.LeftMouseClicks}" />
+                </TextBlock>
+                <TextBlock>
+                <Run Text="DClicks:" />
+                <Run Text="{Binding MouseStatistics.Stats.MouseDoubleClicks}" />
+                </TextBlock>
+                <Button Margin="5 0 0 0" Content="Reset" ToolTip="Reset statistic" Click="Reset_Click" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0">
+                <TextBlock DockPanel.Dock="Bottom">
+                <Run Text="MDistance:" />
+                <Run Text="{Binding MouseStatistics.MouseDistanceText,UpdateSourceTrigger=PropertyChanged,Mode=OneWay}" />
+                </TextBlock>
+                <Button Margin="5 0 0 0" Content="Leave" ToolTip="Leave Mode" Click="Usability_Click" />
+            </StackPanel>
+        </StackPanel>
+        <TabControl Margin="0 4 0 0"
+                    Visibility="{Binding Path=UsabilityModeDisabled,Converter={StaticResource BooleanToVisibilityConverter}}">
             <TabItem Header="General">
-                <DockPanel HorizontalAlignment="Left">
-                    <Button Content="Reset" DockPanel.Dock="Bottom" Click="Reset_Click" />
+                <StackPanel HorizontalAlignment="Left">
                     <TextBox AcceptsReturn="True" Text="{Binding Report, Mode=OneWay}" DockPanel.Dock="Top" />
-                </DockPanel>
+                    <Button Content="Reset" DockPanel.Dock="Bottom" Click="Reset_Click"  />
+                </StackPanel>
             </TabItem>
             <TabItem Header="Applications">
                 <TabControl>
